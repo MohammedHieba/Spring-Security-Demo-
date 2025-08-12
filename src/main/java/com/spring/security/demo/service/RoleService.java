@@ -2,6 +2,7 @@ package com.spring.security.demo.service;
 
 import java.util.List;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.spring.security.demo.model.Role;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RoleService {
 
 	private final RoleRepo roleRepo;
