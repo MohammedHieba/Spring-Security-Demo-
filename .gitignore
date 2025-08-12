@@ -33,3 +33,8 @@ build/
 .vscode/
 
 
+.gitattributes
+Build.run.xml
+mvnw.cmd
+mvnw
+Run.run.xml
