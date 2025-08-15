@@ -66,13 +66,13 @@ public class JwtTokenUtils {
 
     public boolean isTokenValid(String token, AppUserDetail userDetails) {
         log.info("isTokenExpired >>> " + isTokenExpired(token));
-        String username = getUserNameFromToken(token);
-        log.info("username from token >>> " + username);
-        log.info("userDetails.getUsername >>> " + userDetails.getUsername());
-        log.info("username =  >>> userDetails.getUsername >>> " + username.equals(userDetails.getUsername()));
-        Boolean isUserNameEqual = username.equalsIgnoreCase(userDetails.getUsername());
+//        String username = getUserNameFromToken(token);
+//        log.info("username from token >>> " + username);
+//        log.info("userDetails.getUsername >>> " + userDetails.getUsername());
+//        log.info("username =  >>> userDetails.getUsername >>> " + username.equals(userDetails.getUsername()));
+//        Boolean isUserNameEqual = username.equalsIgnoreCase(userDetails.getUsername());
 
-        return (isUserNameEqual && !isTokenExpired(token));
+        return (!isTokenExpired(token));
     }
 
     public boolean isTokenExpired(String token) {
