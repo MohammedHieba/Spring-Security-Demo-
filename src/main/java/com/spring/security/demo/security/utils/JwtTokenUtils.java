@@ -1,23 +1,24 @@
 package com.spring.security.demo.security.utils;
 
 import com.spring.security.demo.dto.AppUserDetail;
+import com.spring.security.demo.model.TokenInfo;
+import com.spring.security.demo.service.auth.TokenInfoService;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.lang.Assert;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.catalina.Globals;
-import org.apache.tomcat.util.codec.binary.Base64;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 @Log4j2
 @Component
@@ -27,6 +28,9 @@ public class JwtTokenUtils {
     private static Long ACCESS_TOKEN_VALIDITY;
     private static Long REFRESH_TOKEN_VALIDITY;
     private static SecretKey secretKey;
+
+    @Autowired
+    private TokenInfoService  tokenInfoService;
 
     public JwtTokenUtils(@Value("${auth.secret}") String secret, @Value("${auth.access.expiration}") Long accessValidity
             , @Value("${auth.refresh.expiration}") Long refreshValidity) {
@@ -86,25 +90,24 @@ public class JwtTokenUtils {
     }
 
 
-    public boolean validateToken(String token , HttpServletRequest httpServletRequest){
+    public boolean validateToken(String token , HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException {
 
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+             isTokenNotRevoked(token);
             return true;
-        }catch (SignatureException ex){
-            log.info("Invalid JWT Signature");
-        }catch (MalformedJwtException ex){
-            log.info("Invalid JWT token");
-            httpServletRequest.setAttribute("expired",ex.getMessage());
-        }catch (ExpiredJwtException ex){
-            log.info("Expired JWT token");
-            httpServletRequest.setAttribute("expired",ex.getMessage());
-        }catch (UnsupportedJwtException ex){
-            log.info("Unsupported JWT exception");
-        }catch (IllegalArgumentException ex){
-            log.info("Jwt claims string is empty");
+        }catch (RuntimeException ex){
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"" + ex.getMessage() + "\"}");
+            return false;
         }
-        return false;
+    }
+
+    private void isTokenNotRevoked(String accessToken) {
+         Optional<TokenInfo> token = tokenInfoService.findByAccessToken(accessToken);
+         if(!token.isPresent()) throw new RuntimeException("Token is not valid");
     }
 
 }

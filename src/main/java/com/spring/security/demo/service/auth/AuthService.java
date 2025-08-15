@@ -1,5 +1,6 @@
 package com.spring.security.demo.service.auth;
 
+import com.spring.security.demo.dto.AccessTokenDto;
 import com.spring.security.demo.dto.AppUserDetail;
 import com.spring.security.demo.dto.JWTResponseDto;
 import com.spring.security.demo.model.AppUser;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -86,5 +88,28 @@ public class AuthService {
         return tokenInfoService.save(tokenInfo);
     }
 
+
+    public AccessTokenDto refreshAccessToken(String refreshToken) {
+        if (jwtTokenUtils.isTokenExpired(refreshToken)) {
+            return null;
+        }
+        String userName = jwtTokenUtils.getUserNameFromToken(refreshToken);
+        Optional<TokenInfo> refresh = tokenInfoService.findByRefreshToken(refreshToken);
+        if (!refresh.isPresent()) {
+            return null;
+        }
+
+        return new AccessTokenDto(JwtTokenUtils.generateToken(userName, UUID.randomUUID().toString(), false));
+
+    }
+
+
+    public void logoutUser(String accessToken) {
+        Optional<TokenInfo> tokenInfo = tokenInfoService.findByAccessToken(accessToken);
+        if (tokenInfo.isPresent()) {
+            tokenInfoService.revokeToken(tokenInfo.get().getId());
+        }
+
+    }
 
 }
