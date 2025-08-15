@@ -19,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Configuration
 public class SecurityConfig {
 
-    String [] PUBLIC_END_POINTS = {"/api/v1/auth/login", "/api/v1/auth/refresh-token", "/api/v1/auth/logout"};
+    String [] PUBLIC_END_POINTS = {"/api/v1/auth/login"};
 
 
 
